@@ -33,6 +33,30 @@ class SimpleHTTPRequestHandler(BaseHTTPRequestHandler):
             # Add more MIME types as needed
         }
         return mime_types.get(file_extension, 'application/octet-stream')
+    
+    def do_POST(self):
+        self.send_response(200)
+        self.send_header('Content-type', 'text/plain')
+        self.end_headers()
+        self.wfile.write(b'200 OK')
+
+    def do_PUT(self):
+        self.send_response(200)
+        self.send_header('Content-type', 'text/plain')
+        self.end_headers()
+        self.wfile.write(b'200 OK')
+
+    def do_DELETE(self):
+        self.send_response(200)
+        self.send_header('Content-type', 'text/plain')
+        self.end_headers()
+        self.wfile.write(b'200 OK')
+    
+    def do_HEAD(self):
+        self.send_response(200)
+        self.send_header('Content-type', 'text/plain')
+        self.end_headers()
+        self.wfile.write(b'200 OK')
 
 def run(server_class=HTTPServer, handler_class=SimpleHTTPRequestHandler, port=8000):
     server_address = ('', port)
