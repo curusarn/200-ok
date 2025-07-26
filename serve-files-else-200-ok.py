@@ -1,5 +1,7 @@
 from http.server import BaseHTTPRequestHandler, HTTPServer
 import os
+import gzip
+import json
 
 class SimpleHTTPRequestHandler(BaseHTTPRequestHandler):
     def do_GET(self):
@@ -35,6 +37,28 @@ class SimpleHTTPRequestHandler(BaseHTTPRequestHandler):
         return mime_types.get(file_extension, 'application/octet-stream')
     
     def do_POST(self):
+        content_length = int(self.headers.get('Content-Length', 0))
+        body = None
+        if content_length > 0:
+            raw_body = self.rfile.read(content_length)
+            if self.headers.get('Content-Encoding') == 'gzip':
+                try:
+                    body = gzip.decompress(raw_body)
+                except Exception as e:
+                    print(f"Failed to decompress gzip body: {e}")
+                    body = raw_body
+            else:
+                body = raw_body
+
+            try:
+                data = json.loads(body)
+                if len(str(data)) > 120:
+                    print(f"Received POST data: {str(data)[:120]}...")
+                else:
+                    print(f"Received POST data: {data}")
+            except json.JSONDecodeError:
+                print(f"Received non-JSON POST data: {body[:120]}..." if len(body) > 120 else f"Received non-JSON POST data: {body}")
+
         self.send_response(200)
         self.send_header('Content-type', 'text/plain')
         self.end_headers()

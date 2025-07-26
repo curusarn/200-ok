@@ -1,5 +1,6 @@
 from http.server import BaseHTTPRequestHandler, HTTPServer
 import os
+import gzip
 
 class SimpleHTTPRequestHandler(BaseHTTPRequestHandler):
     def do_GET(self):
@@ -11,7 +12,15 @@ class SimpleHTTPRequestHandler(BaseHTTPRequestHandler):
     def do_POST(self):
         content_length = int(self.headers.get('Content-Length', 0))
         if content_length > 0:
-            body = self.rfile.read(content_length)
+            raw_body = self.rfile.read(content_length)
+            if self.headers.get('Content-Encoding') == 'gzip':
+                try:
+                    body = gzip.decompress(raw_body)
+                except Exception as e:
+                    print(f"Failed to decompress gzip body: {e}")
+                    body = raw_body
+            else:
+                body = raw_body
             try:
                 import json
                 data = json.loads(body)
